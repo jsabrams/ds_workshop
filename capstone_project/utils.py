@@ -42,3 +42,18 @@ def mean_bootstrap(a, hi_ci, lo_ci, reps = 10000):
 	"""
 	a_boot = [a[a.index[np.random.randint(0,len(a),len(a))]].mean() for i in range(reps)]
 	return np.percentile(a_boot, [lo_ci, hi_ci])
+
+def zipcode_processor(df, fields):
+	"""
+	Purpose: get aggregated zipcode info with the last two numbers anonymized
+	Inputs:	df: original zipcode dataframe with full five digit codes
+			fields: the fields in df to aggregate (become new columns)
+	Output:	a new dataframe with the data aggregated for fields
+	"""
+	codes = np.floor(df.zipcd/100).unique()
+	df_new = {'zipcd': codes}
+	for field in fields:
+		vals = [df[np.floor(df.zipcd/100) == x][field].mean() for x in codes]
+		ser = pd.Series(data = vals, index = codes)
+		df_new[field] = ser
+	return pd.DataFrame(df_new)
