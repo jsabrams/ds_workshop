@@ -53,7 +53,7 @@ def zipcode_processor(df, fields):
 	codes = np.floor(df.zipcd/100).unique()
 	df_new = {}
 	for field in fields:
-		vals = [df[np.floor(df.zipcd/100) == x][field].mean() for x in codes]
+		vals = [df[np.floor(df.zipcd/100) == x][field].sum() for x in codes]
 		ser = pd.Series(data = vals, index = codes)
 		df_new[field] = ser
 	return pd.DataFrame(df_new)
