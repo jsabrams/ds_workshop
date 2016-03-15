@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import datetime as dt
 
 def med_diff_bootstrap(a, b, hi_ci, lo_ci, reps = 10000):
 	"""
@@ -57,3 +58,15 @@ def zipcode_processor(df, fields):
 		ser = pd.Series(data = vals, index = codes)
 		df_new[field] = ser
 	return pd.DataFrame(df_new)
+
+def date_parser(x):
+	""" 
+	Purpose: convert string dates from lending club into datetime objects
+	Input:	x: a date string from the lending club data set
+	Output	a correctly formated datetime object
+	"""
+    if isinstance(x, basestring):
+        y = dt.datetime.strptime(x,'%b-%Y')
+    else:
+        y = x
+    return y
