@@ -70,3 +70,11 @@ def date_parser(x):
     else:
         y = x
     return y
+
+def parse_date_series(ser):
+	"""
+	Purpose: parse all dates in a series
+	Input:	ser: a series of dates from the lending club data set
+	Output: a pandas series of date time objects
+	"""
+	return pd.Series(data = map(date_parser, ser), index = ser.index) 
