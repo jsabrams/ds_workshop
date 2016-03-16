@@ -65,11 +65,11 @@ def date_parser(x):
 	Input:	x: a date string from the lending club data set
 	Output	a correctly formated datetime object
 	"""
-    if isinstance(x, basestring):
-        y = dt.datetime.strptime(x,'%b-%Y')
-    else:
-        y = x
-    return y
+	if isinstance(x, basestring):
+		y = dt.datetime.strptime(x,'%b-%Y')
+	else:
+		y = x
+	return y
 
 def parse_date_series(ser):
 	"""
@@ -78,3 +78,15 @@ def parse_date_series(ser):
 	Output: a pandas series of date time objects
 	"""
 	return pd.Series(data = map(date_parser, ser), index = ser.index) 
+
+def months_since(base_ser, ser):
+	"""
+	Purpose: find the number of months from ser until base_ser
+	Inputs: base_ser: the end series (usually now) of datetime objects
+			ser: the beginning series of datetime objects
+	Output: a new series of months
+	"""
+	### Need to make this robust to null values
+	delta_time = base_ser - ser
+	in_seconds = map(lambda x: x.total_seconds(), delta_time)
+
