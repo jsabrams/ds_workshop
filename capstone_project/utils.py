@@ -86,7 +86,8 @@ def months_since(base_ser, ser):
 			ser: the beginning series of datetime objects
 	Output: a new series of months
 	"""
-	### Need to make this robust to null values
 	delta_time = base_ser - ser
 	in_seconds = map(lambda x: x.total_seconds(), delta_time)
+	in_seconds = pd.Series(data = in_seconds, index = ser.index)
+	return (((in_seconds / 60) / 60) / 24) / 30.4167
 
