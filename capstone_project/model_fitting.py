@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
 import sklearn as sk
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
 import matplotlib.pyplot as plt
 from scipy import interp
 
 def fit_plot_ROC(features, labels, classifier, cross_val):
 	"""
-	Purpose: fit a classifier to training data with k-fold cross validation
+	Purpose: fit a classifier to training data with k-fold cross validation, plot ROC curves for each fold
 	Inputs:	features: a pandas dataframe of feature values
 			labels: a pandas dataframe of class labels
 			classifier: an sklearn classifier e.g., sklearn.linear_model.LogisticRegression()
@@ -18,7 +18,6 @@ def fit_plot_ROC(features, labels, classifier, cross_val):
 	"""
 	mean_tpr = 0.0
 	mean_fpr = np.linspace(0, 1, 100)
-	all_tpr = []
 	for i, (train, test) in enumerate(cross_val):
 		probas_ = classifier.fit(features.values[train], labels.values[train]).predict_proba(features.values[test])
 		# Compute ROC curve and area the curve
@@ -39,4 +38,34 @@ def fit_plot_ROC(features, labels, classifier, cross_val):
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver operating characteristic')
 	plt.legend(loc="lower right")
+	return mean_auc, classifier
+
+def fit_plot_PR(features, labels, classifier, cross_val):
+	"""
+	Purpose: fit a classifier to training data with k-fold cross validation, plot precision-recall curves for each fold
+	Inputs:	features: a pandas dataframe of feature values
+			labels: a pandas dataframe of class labels
+			classifier: an sklearn classifier e.g., sklearn.linear_model.LogisticRegression()
+			cross_val: an sklearn cross-validation object 
+	Outputs:	classifier: the fit classifier
+				also plots the PR curves for each fold
+	"""
+	mean_precision = 0.0
+	mean_recall = np.linspace(0, 1, 100)
+	for i, (train, test) in enumerate(cross_val):
+		probas_ = classifier.fit(features.values[train], labels.values[train]).predict_proba(features.values[test])
+		precision, recall, _ = precision_recall_curve(labels.values[test], probas_[:, 1])
+		mean_precision += interp(mean_recall, recall[::-1], precision[::-1])
+		mean_precision[0] = 1.0
+		precision_score = average_precision_score(labels.values[test], probas_[:, 1], average='micro')
+		plt.plot(recall, precision, lw=1, label='P-R fold %d (area = %0.2f)' % (i, precision_score))
+	mean_precision /= len(cross_val)
+	mean_auc = auc(mean_recall, mean_precision)
+	plt.plot(mean_recall, mean_precision, 'k--', label='Mean P-R (area = %0.2f)' % mean_auc, lw=2)
+	plt.legend(loc="upper right")
+	plt.xlim([-0.05, 1.05])
+	plt.ylim([-0.05, 1.05])
+	plt.xlabel('Recall')
+	plt.ylabel('Precision')
+	plt.title('Precision-Recall Curve')
 	return mean_auc, classifier
