@@ -75,11 +75,12 @@ def fit_plot_PR(features, labels, classifier, cross_val):
 def get_reliable_features(X, y):
 	"""
 	Purpose: get the model features related to the labels from highest f-score to lowest f-score
+		for classification
 	Inputs:	X: dataframe consisting of values for the different features
 			y: dataframe consisting of the labels for each feature vector
 	Output: a dataframe of f and p-values, sorted from highest f-value to lowest
 	"""
-	f, pval  = f_regression(X, y, center=True)										#Do f_regression
+	f, pval  = f_classif(X, y, center=True)										#Do f_classif
 	feat_pval = pd.Series(data = pval < (0.05 / len(X.columns)), index = X.columns) #pvals with Bonferroni correction
 	feat_f = pd.Series(data = f, index = X.columns)							#f values
 	df = pd.DataFrame()
