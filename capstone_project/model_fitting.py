@@ -78,14 +78,21 @@ def get_reliable_features(X, y):
 		for classification
 	Inputs:	X: dataframe consisting of values for the different features
 			y: dataframe consisting of the labels for each feature vector
-	Output: a dataframe of f and p-values, sorted from highest f-value to lowest
+	Output: a dataframe of f, p-values, and cohen's d values, sorted from highest f-value to lowest
 	"""
-	f, pval  = f_classif(X, y, center=True)										#Do f_classif
+	f, pval  = f_classif(X, y)										#Do f_classif
 	feat_pval = pd.Series(data = pval < (0.05 / len(X.columns)), index = X.columns) #pvals with Bonferroni correction
 	feat_f = pd.Series(data = f, index = X.columns)							#f values
+	d = []
+	for feat in X.columns:
+		pooled_var = X.loc[y[y == 0].index][feat].var() + X.loc[y[y == 1].index][feat].var()
+		mean_diff = X.loc[y[y == 0].index][feat].mean() - X.loc[y[y == 1].index][feat].mean()
+		d.append(np.abs(mean_diff / np.sqrt(pooled_var)))
+	cohen_d = pd.Series(data = d, index = X.columns) 
 	df = pd.DataFrame()
 	df['f_score'] = feat_f
 	df['pval'] = feat_pval
+	df['cohens_d'] = cohen_d
 	df.sort_values('f_score', ascending=False, inplace=True)						#Sort by the f values
 	return df
 
