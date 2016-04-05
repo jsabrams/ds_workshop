@@ -81,7 +81,7 @@ def get_reliable_features(X, y):
 	"""
 	f, pval  = f_regression(X, y, center=True)										#Do f_regression
 	feat_pval = pd.Series(data = pval < (0.05 / len(X.columns)), index = X.columns) #pvals with Bonferroni correction
-	feat_f = pd.Series(data = f, index = X_train.columns)							#f values
+	feat_f = pd.Series(data = f, index = X.columns)							#f values
 	df = pd.DataFrame()
 	df['f_score'] = feat_f
 	df['pval'] = feat_pval
