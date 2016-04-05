@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import sklearn as sk
+import seaborn as sns
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
 from sklearn.feature_selection import f_regression, SelectKBest, f_classif
 import matplotlib.pyplot as plt
@@ -167,5 +168,33 @@ def add_feature_auc(X_train, y_train, X_val, y_val, classifier, cross_val, n_fea
 	df['train_auc'] = train_aucs
 	df['val_auc'] = val_aucs
 	return df
+
+def plot_feature_corr(X, f_sz = (11, 9)):
+	"""
+	Purpose: plot a correlation matrix for the features in X
+	Inputs:	X: a pandas dataframe of feature values
+			f_sz: a tuple for the figure size
+	Output: the correlation matrix of X
+	"""
+	sns.set(style="white")
+
+	# Compute the correlation matrix
+	corr = X.corr()
+
+	# Generate a mask for the upper triangle
+	mask = np.zeros_like(corr, dtype=np.bool)
+	mask[np.triu_indices_from(mask)] = True
+	
+	# Set up the matplotlib figure
+	f, ax = plt.subplots(figsize= f_sz)
+	
+	# Generate a custom diverging colormap
+	cmap = sns.diverging_palette(220, 10, as_cmap=True)
+
+	# Draw the heatmap with the mask and correct aspect ratio
+	sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3,
+		square=True, linewidths=.5, cbar_kws={"shrink": .5}, ax=ax)
+
+	return corr
 
 	
