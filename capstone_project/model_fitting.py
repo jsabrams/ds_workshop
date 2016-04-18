@@ -197,4 +197,26 @@ def plot_feature_corr(X, f_sz = (11, 9)):
 
 	return corr
 
+def plot_decision_tree_importance(clf, X):
+	"""
+
+	"""
+	importances = clf.feature_importances_
+	indices = np.argsort(importances)[::-1]
+	
+	# Print the feature ranking
+	print("Feature ranking:")
+	
+	for f in range(X.shape[1]):
+		print("%d. feature %s (%f)" % (f + 1, X.columns[indices[f]], importances[indices[f]]))
+
+	# Plot the feature importances of the tree
+	plt.figure()
+	plt.title("Feature importances")
+	plt.bar(range(X.shape[1]), importances[indices],
+		color="r", align="center")
+	plt.xticks(range(X.shape[1]),
+		range(1, X.shape[1] + 1))
+	plt.xlim([-1, X.shape[1]])
+	plt.show()
 	
