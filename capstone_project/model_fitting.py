@@ -42,6 +42,30 @@ def fit_plot_ROC(features, labels, classifier, cross_val):
 	plt.legend(loc="lower right")
 	return mean_auc, classifier
 
+def fit_clf(X_train, y_train, X_test, y_test, classifier):
+	"""
+	Purpose: fit a classifier to training data and get performance on test data
+	Inputs:	X_train: training features
+			y_train: training labels
+			X_test: test features
+			y_test: test labels
+			classifier: an sklearn classifier object
+	Output:	a classifier that has been fit to the training data
+	"""
+	classifier = classifier.fit(X_train.values, y_train)
+	probas_ = classifier.predict_proba(X_test.values)
+	fpr, tpr, thresholds = roc_curve(y_test.values, probas_[:, 1])
+	roc_auc = auc(fpr, tpr) 												#Get the area under the curve
+	plt.plot(fpr, tpr, lw=1, label='Test ROC (area = %0.2f)' % (roc_auc))
+	plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6), label='Chance')	#Plot chance performance
+	plt.xlim([-0.05, 1.05])
+	plt.ylim([-0.05, 1.05])
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.title('Receiver operating characteristic')
+	plt.legend(loc="lower right")
+	return classifier
+
 def fit_plot_PR(features, labels, classifier, cross_val):
 	"""
 	Purpose: fit a classifier to training data with k-fold cross validation, plot precision-recall curves for each fold
