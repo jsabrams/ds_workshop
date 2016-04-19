@@ -243,4 +243,63 @@ def plot_decision_tree_importance(clf, X):
 		range(1, X.shape[1] + 1))
 	plt.xlim([-1, X.shape[1]])
 	plt.show()
+
+def fit_stacked_clf(clfs, clf_2, cv, X_train, y_train):
+	"""
+	Purpose: fit two stage model to training set
+	Inputs: clfs: list of sklearn classifiers for the first stage
+			clf_2: single sklearn classifier that will classify based on outputs of first stage
+			cv: sklearn cross-validation object
+			X_train: pandas dataframe with training features
+			y_train: pandas dataframe with training labels
+	Outputs: 	clfs: fit versions of the first stage classifiers
+				clf_2: fit version of the stage one classifier
+	"""
+	prob_est = np.zeros((X_train.shape[0], len(clfs)))			#Empty array for stage one probability estimates
+	print 'Training classifiers with cross-validation'
+	for i, clf in enumerate(clfs): 								#For each classifier
+		print i, clf
+		for j, (train, val) in enumerate(cv): 					#For each cross-validation fold
+			print "Fold", j
+			train_feat = X_train.values[train] 					#Training features for this fold
+			train_label = y_train.values[train] 				#Training labels for this fold 
+			val_feat = X_train.values[val]						#Validation features for this fold
+			clf.fit(train_feat, train_label)					#Fit this clf to this training partition
+			prob_est[val, i] = clf.predict_proba(val_feat)[:,1]	#Predict class probability for validation fold and store
+		clfs[i] = clf.fit(X_train, y_train)						#After cross-validation, re-fit the clf on all training data
+
+	clf_2.fit(prob_est, y_train) 								#Train the the stage two classifier with the probability estimates
+
+	return clfs, clf_2 											#Return the classifiers
+
+def stacked_clf_predict(clfs, clf_2, X_test, y_test, plot = True):
+	"""
+	Purpose: make predictions with stacked classifier
+	Inputs: clfs: list of fit first-stage sklearn classifiers 
+			clf_2: single fit second-stage sklearn classifier
+			X_test:	test features (pandas dataframe)
+			y_test: test labels (pandas dataframe)
+			plot: boolean that controls plotting
+	Output:	probas_: the probability of class identity
+	"""
+	test_prob_est = np.zeros((X_test.shape[0], len(clfs)))		#Empty array for probability estimates
+	print 'Estimating probabilities for test set'
+	for i, clf in enumerate(clfs): 								#For each stage-one classifier
+		print 'Classifier', i
+		test_prob_est[:, i] = clf.predict_proba(X_test)[:,1]	#Predict the class probability for the test data
+
+	probas_ = clf_2.predict_proba(test_prob_est) 				#Predict the class probability with the second stage classifier
 	
+	if plot:													#Plot test set ROC curve
+		fpr, tpr, thresholds = roc_curve(y_test.values, probas_[:, 1])
+		roc_auc = auc(fpr, tpr)
+		plt.plot(fpr, tpr, lw=1, label='Test ROC (area = %0.2f)' % (roc_auc))
+		plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6), label='Chance')
+		plt.xlim([-0.05, 1.05])
+		plt.ylim([-0.05, 1.05])
+		plt.xlabel('False Positive Rate')
+		plt.ylabel('True Positive Rate')
+		plt.title('Receiver operating characteristic')
+		plt.legend(loc="lower right")
+
+	return probas_
