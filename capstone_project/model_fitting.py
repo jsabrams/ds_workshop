@@ -223,7 +223,10 @@ def plot_feature_corr(X, f_sz = (11, 9)):
 
 def plot_decision_tree_importance(clf, X):
 	"""
-
+	Purpose: plot feature importance for a decision tree
+	Inputs: clf: the classifier
+			X: feature DataFrame
+	Output: a print out and a plot of the feature importance
 	"""
 	importances = clf.feature_importances_
 	indices = np.argsort(importances)[::-1]
